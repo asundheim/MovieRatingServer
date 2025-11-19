@@ -61,7 +61,7 @@ public class MovieListService : IMovieListService
         int increments = DateIncrementCount(startDate, TimeSpan.FromMinutes(1));
         int timeIncrementsPassed = (int)elapsed.TotalMinutes; 
         _dayCount += increments;
-        if ( _dayCount > 11 ) {
+        if ( _dayCount > (_movies.Count/5)) {
             _dayCount = (_dayCount % (_movies.Count/5));
         }
         return _dayCount;

@@ -48,19 +48,22 @@ public class MovieListService : IMovieListService
     public int DayCount()
     {
         _dayCount = 0; 
-        if (_date == default) 
+        if (_date == default)
         { 
-            _date = DateTime.Now; return 0; 
+            _date = DateTime.Now; return 0;
         }
         
-        var startDate = new DateTime(2025, 11, 18, 16, 37, 00);
+        var startDate = new DateTime(2025, 11, 19, 10, 06, 00);
         var elapsed = DateTime.Now - _date;
         var elapsed2 = DateTime.Now - startDate;
         var elapsedSeconds = (int)elapsed.TotalSeconds;
 
         int increments = DateIncrementCount(startDate, TimeSpan.FromMinutes(1));
         int timeIncrementsPassed = (int)elapsed.TotalMinutes; 
-        _dayCount += increments; 
+        _dayCount += increments;
+        if ( _dayCount > 11 ) {
+            _dayCount = (_dayCount % (_movies.Count/5));
+        }
         return _dayCount;
     }
 

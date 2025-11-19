@@ -16,14 +16,22 @@ public class MovieInfoController : ControllerBase
         _movieListService = movieService;
     }
 
-
     [HttpGet("MovieInfo")]
     public IEnumerable<MovieInfo> Get()
     {
-        var dailyMovies = _movieListService.GetDailyMovies();
+        var dailyMovies = _movieListService.GetDailyMovies(5);
         if (dailyMovies is null)
             return new List<MovieInfo>();
 
         return dailyMovies;
+    }
+
+    // GET MovieInfo/DayCount
+    [HttpGet("MovieInfo/DayCount")]
+    public ActionResult<int> GetDayCount()
+    {
+        var dayCount = _movieListService.DayCount;
+
+        return (dayCount);
     }
 }

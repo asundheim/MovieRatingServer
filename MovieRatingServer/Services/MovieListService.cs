@@ -8,7 +8,11 @@ public class MovieListService : IMovieListService
 {
     private readonly List<MovieInfo> _movies;
     private DateTime _date;
+    private int _dayCount;
     private readonly Random _rng;
+    private DateTime _startDate;
+
+    int IMovieListService.DayCount => _dayCount;
 
     public MovieListService(IWebHostEnvironment env)
     {
@@ -30,17 +34,34 @@ public class MovieListService : IMovieListService
         }
     }
 
-    private int DailyIndex()
+    public void SetStartDate(DateTime date)
     {
-        if (_date == default)
-        {
-            _date = DateTime.Now;
-            return 0;
-        }
-        var elapsed = DateTime.Now - _date;
-        int minutesPassed = (int)elapsed.TotalMinutes;
+        _startDate = date;
+    }
 
-        return minutesPassed;
+    private int DateIncrementCount(DateTime startDate, TimeSpan increment)
+    {
+        var elsapsedTime = DateTime.Now - startDate;
+        return (int)(elsapsedTime.Ticks / increment.Ticks);
+    }
+
+    public int DayCount()
+    {
+        _dayCount = 0; 
+        if (_date == default) 
+        { 
+            _date = DateTime.Now; return 0; 
+        }
+        
+        var startDate = new DateTime(2025, 11, 18, 16, 37, 00);
+        var elapsed = DateTime.Now - _date;
+        var elapsed2 = DateTime.Now - startDate;
+        var elapsedSeconds = (int)elapsed.TotalSeconds;
+
+        int increments = DateIncrementCount(startDate, TimeSpan.FromMinutes(1));
+        int timeIncrementsPassed = (int)elapsed.TotalMinutes; 
+        _dayCount += increments; 
+        return _dayCount;
     }
 
 
@@ -57,12 +78,12 @@ public class MovieListService : IMovieListService
         return ints;
     }
 
-    public IEnumerable<MovieInfo> GetDailyMovies()
+    public IEnumerable<MovieInfo> GetDailyMovies(int numberOfMovies)
     {
         var result = new List<MovieInfo>();
-        int numberOfResults = 5;
+        int numberOfResults = numberOfMovies;
         int resultsReturned = 0;
-        int[] dailyIndexes = GetDailyIndexArray(DailyIndex());
+        int[] dailyIndexes = GetDailyIndexArray(DayCount());
 
         while (result.Count < numberOfResults && resultsReturned < dailyIndexes.Length)
         {

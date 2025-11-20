@@ -1,119 +1,61 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 using MovieRating.Shared;
 
 namespace MovieRatingServer.Services;
 
 public class MovieListService : IMovieListService
 {
-    private readonly List<MovieInfo> _movies;
-    private DateTime _date;
-    private int _dayCount;
-    private readonly Random _rng;
-    private DateTime _startDate;
+    private const string _movieDatabaseFileName = "movie-database.json";
+    private readonly DateTime _startDate = DateTime.Now; // new DateTime(2025, 11, 19, 10, 06, 00);
+    private readonly double _incrementMinutes = 1;
+    private const int _dailyMovieCount = 5;
 
-    int IMovieListService.DayCount => _dayCount;
+    private readonly List<MovieInfo> _movies;
+    private readonly Random _rng;
 
     public MovieListService(IWebHostEnvironment env)
     {
         _rng = new Random();
 
-        var path = Path.Combine(env.ContentRootPath, "movie-database.json");
+        var path = Path.Combine(env.ContentRootPath, _movieDatabaseFileName);
 
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
-            var root = JsonSerializer.Deserialize<RawMovieList>(json, options);
-            _movies = root?.MovieDatabase?.Select(m => Map(m, _rng)).ToList() ?? new List<MovieInfo>();
+            RawMovieList root = JsonSerializer.Deserialize<RawMovieList>(json, options) ?? throw new InvalidOperationException("Failed to deserialize movie database");
+            _movies = root.MovieDatabase.Select(m => ConstructMovieInfo(m)).Take(7).ToList();
         }
         else
         {
-            _movies = new List<MovieInfo>();
+            throw new InvalidOperationException($"Unable to resolve movie database at {path}");
         }
     }
 
-    public void SetStartDate(DateTime date)
+    public DailyMovieInfo GetDailyMovies()
     {
-        _startDate = date;
-    }
+        var movies = new List<MovieInfo>();
 
-    private int DateIncrementCount(DateTime startDate, TimeSpan increment)
-    {
-        var elsapsedTime = DateTime.Now - startDate;
-        return (int)(elsapsedTime.Ticks / increment.Ticks);
-    }
-
-    public int DayCount()
-    {
-        _dayCount = 0; 
-        if (_date == default)
-        { 
-            _date = DateTime.Now; return 0;
-        }
-        
-        var startDate = new DateTime(2025, 11, 19, 10, 06, 00);
-        var elapsed = DateTime.Now - _date;
-        var elapsed2 = DateTime.Now - startDate;
-        var elapsedSeconds = (int)elapsed.TotalSeconds;
-
-        int increments = DateIncrementCount(startDate, TimeSpan.FromMinutes(1));
-        int timeIncrementsPassed = (int)elapsed.TotalMinutes; 
-        _dayCount += increments;
-        if ( _dayCount > (_movies.Count/5)) {
-            _dayCount = (_dayCount % (_movies.Count/5));
-        }
-        return _dayCount;
-    }
-
-
-    private MovieInfo GetMovieAt(int index)
-    {
-        return _movies[index];
-    }
-
-    private int[] GetDailyIndexArray(int index)
-    {
-        int tempIndex = (index*5);
-        int[] ints = [tempIndex, tempIndex + 1, tempIndex + 2, tempIndex + 3, tempIndex + 4];
-
-        return ints;
-    }
-
-    public IEnumerable<MovieInfo> GetDailyMovies(int numberOfMovies)
-    {
-        var result = new List<MovieInfo>();
-        int numberOfResults = numberOfMovies;
-        int resultsReturned = 0;
-        int[] dailyIndexes = GetDailyIndexArray(DayCount());
-
-        while (result.Count < numberOfResults && resultsReturned < dailyIndexes.Length)
+        TimeSpan elapsed = DateTime.Now - _startDate;
+        int currentIndex = (_dailyMovieCount * (int)(elapsed.TotalMinutes / _incrementMinutes)) % _movies.Count;
+        for (int i = 0; i < _dailyMovieCount; i++)
         {
-            var tempIndex = dailyIndexes[resultsReturned];
-            if (tempIndex < 0 || tempIndex >= _movies.Count)
-            {
-                resultsReturned++;
-                continue;
-            }
-            var movie = GetMovieAt(tempIndex);
-            if (movie is null)
-            {
-                resultsReturned++;
-                continue;
-            }
-            result.Add(movie);
-            resultsReturned++;
+            movies.Add(_movies[(currentIndex + i) % _movies.Count]);
         }
-        return result;
+
+        return new DailyMovieInfo()
+        {
+            Movies = movies,
+            DailyId = currentIndex,
+        };
     }
 
-
-    private static MovieInfo Map(RawMovie m, Random rng)
+    private MovieInfo ConstructMovieInfo(RawMovie m)
     {
         int ratingsCount = m.Ratings?.Count ?? 0;
-        int random = ratingsCount > 0 ? rng.Next(0, ratingsCount) : 0;
-        var (source, value) = PickRandomRating(m, random, rng);
+        int random = ratingsCount > 0 ? _rng.Next(0, ratingsCount) : 0;
+        var (source, value) = PickRandomRating(m, random, _rng);
 
         return new MovieInfo
         {
@@ -129,7 +71,6 @@ public class MovieListService : IMovieListService
         };
     }
 
-
     private static (string Source, string Value) PickRandomRating(RawMovie m, int x, Random rng)
     {
         if (m.Ratings is { Count: > 0 })
@@ -143,5 +84,4 @@ public class MovieListService : IMovieListService
 
         return (string.Empty, string.Empty);
     }
-
 }

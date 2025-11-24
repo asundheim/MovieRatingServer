@@ -3,6 +3,7 @@
     <File Path=".gitignore" />
   </Folder>
   <Project Path="GatherMovieInfo/GatherMovieInfo.csproj" Id="bf29fa5b-9db1-44d3-b172-c99a309a1d8c">
+    <BuildType Project="Debug" />
     <Build Project="false" />
   </Project>
   <Project Path="MovieRatingServer/MovieRatingServer.csproj" />

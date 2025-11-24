@@ -19,8 +19,10 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-    app.UseCors(options => options.WithOrigins("*").AllowAnyOrigin().AllowAnyHeader());
 }
+
+// TODO disable
+app.UseCors(options => options.WithOrigins("*").AllowAnyOrigin().AllowAnyHeader());
 
 app.UseHttpsRedirection();
 

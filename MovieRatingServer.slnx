@@ -2,7 +2,9 @@
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>
-  <Project Path="GatherMovieInfo/GatherMovieInfo.csproj" Id="bf29fa5b-9db1-44d3-b172-c99a309a1d8c" />
+  <Project Path="GatherMovieInfo/GatherMovieInfo.csproj" Id="bf29fa5b-9db1-44d3-b172-c99a309a1d8c">
+    <Build Project="false" />
+  </Project>
   <Project Path="MovieRatingServer/MovieRatingServer.csproj" />
   <Project Path="MovieRatingShared/MovieRatingShared.csproj" Id="f0cd4a26-3944-431b-816c-ab445c674691" />
 </Solution>

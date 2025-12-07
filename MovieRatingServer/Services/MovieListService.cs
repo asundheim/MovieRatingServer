@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MovieRating.Shared;
+using MovieRatingShared;
 
 namespace MovieRatingServer.Services;
 
@@ -52,37 +53,36 @@ public class MovieListService : IMovieListService
         };
     }
 
-    private MovieInfo ConstructMovieInfo(RawMovie m)
+    private MovieInfo ConstructMovieInfo(RawMovie rawMovie)
     {
-        int ratingsCount = m.Ratings?.Count ?? 0;
-        int random = ratingsCount > 0 ? _rng.Next(0, ratingsCount) : 0;
-        var (source, value) = PickRandomRating(m, random, _rng);
+        int ratingsCount = rawMovie.Ratings.Count;
+        int randomIndex = _rng.Next(0, ratingsCount);
+        RatingInfo ratingInfo = ConstructRatingInfo(rawMovie.Ratings[randomIndex]);
 
         return new MovieInfo
         {
-            Title = m.Title,
-            Year = m.Year ?? string.Empty,
-            Director = m.Director ?? string.Empty,
-            Actors = m.Actors ?? string.Empty,
-            Plot = m.Plot ?? string.Empty,
-            Poster = m.Poster ?? string.Empty,
-            RatingSource = source,
-            RatingValue = value,
-            RandomRatingInt = random,
+            Title = rawMovie.Title,
+            Year = rawMovie.Year ?? string.Empty,
+            Director = rawMovie.Director ?? string.Empty,
+            Actors = rawMovie.Actors ?? string.Empty,
+            Plot = rawMovie.Plot ?? string.Empty,
+            Poster = rawMovie.Poster ?? string.Empty,
+            RatingInfo = ratingInfo,
         };
     }
 
-    private static (string Source, string Value) PickRandomRating(RawMovie m, int x, Random rng)
+    private static RatingInfo ConstructRatingInfo(RawRating rating)
     {
-        if (m.Ratings is { Count: > 0 })
+        return new RatingInfo()
         {
-            var r = m.Ratings[x];
-            return (r.Source ?? string.Empty, r.Value ?? string.Empty);
-        }
-
-        if (!string.IsNullOrEmpty(m.imdbRating))
-            return ("Internet Movie Database", m.imdbRating);
-
-        return (string.Empty, string.Empty);
+            RatingIndex = rating.Source switch
+            {
+                "Internet Movie Database" => RatingIndex.IMDB,
+                "Rotten Tomatoes" => RatingIndex.RottenTomatoes,
+                "Metacritic" => RatingIndex.Metacritic,
+                _ => RatingIndex.IMDB
+            },
+            RatingValue = rating.Value
+        };
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using MovieRatingShared;
+using System.Text.Json.Serialization;
 
 namespace MovieRating.Shared;
 
@@ -22,14 +23,17 @@ public class MovieInfo
     [JsonPropertyName("Poster")]
     public required string Poster { get; set; }
 
-    [JsonPropertyName("RatingSource")]
-    public required string RatingSource { get; set; }
+    [JsonPropertyName("RatingInfo")]
+    public required RatingInfo RatingInfo { get; set; }
+}
+
+public class RatingInfo
+{
+    [JsonPropertyName("RatingIndex")]
+    public required RatingIndex RatingIndex { get; set; }
 
     [JsonPropertyName("RatingValue")]
     public required string RatingValue { get; set; }
-
-    [JsonPropertyName("RandomRatingInt")]
-    public required int RandomRatingInt { get; set; }
 }
 
 public class RawMovieList
@@ -42,33 +46,33 @@ public class RawMovie
 {
     public required string Title { get; set; }
     public string Year { get; set; } = string.Empty;
-    public string? Rated { get; set; }
-    public string? Released { get; set; }
-    public string? Runtime { get; set; }
-    public string? Genre { get; set; }
-    public string? Director { get; set; }
-    public string? Writer { get; set; }
-    public string? Actors { get; set; }
-    public string? Plot { get; set; }
-    public string? Language { get; set; }
-    public string? Country { get; set; }
-    public string? Awards { get; set; }
-    public string? Poster { get; set; }
-    public List<Rating>? Ratings { get; set; }
-    public string? Metascore { get; set; }
-    public string? imdbRating { get; set; }
-    public string? imdbVotes { get; set; }
-    public string? imdbID { get; set; }
-    public string? Type { get; set; }
-    public string? DVD { get; set; }
-    public string? BoxOffice { get; set; }
-    public string? Production { get; set; }
-    public string? Website { get; set; }
-    public string? Response { get; set; }
+    public required string Rated { get; set; }
+    public required string Released { get; set; }
+    public required string Runtime { get; set; }
+    public required string Genre { get; set; }
+    public required string Director { get; set; }
+    public required string Writer { get; set; }
+    public required string Actors { get; set; }
+    public required string Plot { get; set; }
+    public required string Language { get; set; }
+    public required string Country { get; set; }
+    public required string Awards { get; set; }
+    public required string Poster { get; set; }
+    public required List<RawRating> Ratings { get; set; }
+    public required string Metascore { get; set; }
+    public required string imdbRating { get; set; }
+    public required string imdbVotes { get; set; }
+    public required string imdbID { get; set; }
+    public required string Type { get; set; }
+    public required string DVD { get; set; }
+    public required string BoxOffice { get; set; }
+    public required string Production { get; set; }
+    public required string Website { get; set; }
+    public required string Response { get; set; }
 }
 
-public class Rating
+public class RawRating
 {
-    public string? Source { get; set; }
-    public string? Value { get; set; }
+    public required string Source { get; set; }
+    public required string Value { get; set; }
 }

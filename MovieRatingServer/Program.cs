@@ -9,8 +9,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<ITimeService, TimeService>();
 builder.Services.AddSingleton<IMovieListService, MovieListService>();
-
+builder.Services.AddSingleton<IPlayerScoreService, PlayerScoreService>();
 
 var app = builder.Build();
 
@@ -22,7 +23,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // TODO disable
-app.UseCors(options => options.WithOrigins("*").AllowAnyOrigin().AllowAnyHeader());
+app.UseCors(options => options.AllowAnyMethod().AllowAnyOrigin().AllowAnyHeader());
 
 app.UseHttpsRedirection();
 

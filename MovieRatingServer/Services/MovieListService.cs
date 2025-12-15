@@ -7,17 +7,15 @@ namespace MovieRatingServer.Services;
 public class MovieListService : IMovieListService
 {
     private const string _movieDatabaseFileName = "movie-database.json";
-    private readonly DateTime _startDate = new DateTime(2025, 12, 01, 08, 00, 00, DateTimeKind.Utc); // DateTime.Now;
-    private readonly double _incrementMinutes = 60;
-    private readonly double _incrementDays = 1;
     private const int _dailyMovieCount = 3;
 
+    private readonly ITimeService _timeService;
     private readonly List<MovieInfo> _movies;
-    private readonly Random _rng;
+    private readonly Random _rng = new Random();
 
-    public MovieListService(IWebHostEnvironment env)
+    public MovieListService(IWebHostEnvironment env, ITimeService timeService)
     {
-        _rng = new Random();
+        _timeService = timeService;
 
         var path = Path.Combine(env.ContentRootPath, _movieDatabaseFileName);
 
@@ -39,8 +37,8 @@ public class MovieListService : IMovieListService
     {
         var movies = new List<MovieInfo>();
 
-        TimeSpan elapsed = DateTime.Now - _startDate;
-        int currentIndex = (_dailyMovieCount * (int)(elapsed.TotalDays / _incrementDays)) % _movies.Count;
+        
+        int currentIndex = (_dailyMovieCount * _timeService.GetDailyIndex()) % _movies.Count;
         for (int i = 0; i < _dailyMovieCount; i++)
         {
             movies.Add(_movies[(currentIndex + i) % _movies.Count]);

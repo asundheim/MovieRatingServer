@@ -10,7 +10,7 @@ public class PlayerScoreService : IPlayerScoreService
     private readonly Lock _lock = new Lock();
 
     private readonly Dictionary<int, List<int>> _movieScores = new Dictionary<int, List<int>>();
-    private readonly Dictionary<int, List<int>> _movieRatings = new Dictionary<int, List<int>>();
+    private readonly Dictionary<double, List<double>> _movieRatings = new Dictionary<double, List<double>>();
     private readonly List<int> _overallScores = new List<int>();
 
     private int _currentDailyIndex = -1;
@@ -38,7 +38,7 @@ public class PlayerScoreService : IPlayerScoreService
                     _movieScores[movieScore.MovieIndex] = [movieScore.MovieScore];
                 }
 
-                if (_movieRatings.TryGetValue(movieScore.MovieIndex, out List<int>? ratings))
+                if (_movieRatings.TryGetValue(movieScore.MovieIndex, out List<double>? ratings))
                 {
                     ratings.Add(movieScore.MovieRating);
                 }

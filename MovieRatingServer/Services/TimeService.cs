@@ -10,6 +10,8 @@ public class TimeService : ITimeService
     {
         TimeSpan elapsed = DateTime.Now - _startDate;
 
+        //return (int)(elapsed.TotalMinutes / _incrementMinutes);
+
         return (int)(elapsed.TotalDays / _incrementDays);
     }
 }

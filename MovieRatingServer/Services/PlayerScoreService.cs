@@ -60,7 +60,7 @@ public class PlayerScoreService : IPlayerScoreService
 
             if (_overallScores.Count == 0 || _movieScores.Count == 0 || _movieRatings.Count == 0)
             {
-                return new AverageDailyPlayerScore() { AverageMovieScores = [], AverageOverallScore = 0 };
+                return new AverageDailyPlayerScore() { AverageMovieScores = [], AverageOverallScore = 0, TotalDailyPlayers = 0 };
             }
 
             List<MovieScoreInfo> averageMovieScores = new List<MovieScoreInfo>();
@@ -78,6 +78,7 @@ public class PlayerScoreService : IPlayerScoreService
             {
                 AverageMovieScores = averageMovieScores,
                 AverageOverallScore = _overallScores.Average(),
+                TotalDailyPlayers = _overallScores.Count
             };
         }
     }

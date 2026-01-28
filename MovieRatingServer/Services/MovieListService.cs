@@ -66,6 +66,9 @@ public class MovieListService : IMovieListService
             Plot = rawMovie.Plot ?? string.Empty,
             Poster = rawMovie.Poster ?? string.Empty,
             RatingInfo = ratingInfo,
+            BoxOffice = rawMovie.BoxOffice ?? string.Empty,
+            WatchProviders = rawMovie.WatchProviders ?? [],
+            Reviews = rawMovie.Reviews ?? [],
         };
     }
 

@@ -25,6 +25,15 @@ public class MovieInfo
 
     [JsonPropertyName("RatingInfo")]
     public required RatingInfo RatingInfo { get; set; }
+
+    [JsonPropertyName("BoxOffice")]
+    public required string BoxOffice { get; set; }
+
+    [JsonPropertyName("WatchProviders")]
+    public required List<WatchProvider>? WatchProviders { get; set; }
+
+    [JsonPropertyName("Reviews")]
+    public required List<string>? Reviews { get; set; }
 }
 
 public class RatingInfo
@@ -69,6 +78,9 @@ public class RawMovie
     public required string Production { get; set; }
     public required string Website { get; set; }
     public required string Response { get; set; }
+    public int TMDBId { get; set; }
+    public List<WatchProvider>? WatchProviders { get; set; }
+    public List<string>? Reviews { get; set; }
 }
 
 public class RawRating

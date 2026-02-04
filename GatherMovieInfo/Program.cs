@@ -1,16 +1,19 @@
 ﻿using MovieRating.Shared;
 using MovieRatingShared;
 using Services;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
+using System.Threading.Channels;
+using System.Xml;
 
 namespace GatherMovieInfo;
 
-internal class Program
+internal partial class Program
 {
 
     const string RawIds = "";
-    const string OutPath = ".\\movie-list.json";
     
     private const string movieFightClubID = "550";
     private const int startingPageNumber = 1;
@@ -19,20 +22,101 @@ internal class Program
     private const int maxAverageVote = 7;
     private const int minVoteCount = 3000;
     private static Random rng = new Random();
-
+    private static string regexWebsites = "(FULL SPOILER-FREE REVIEW)|((((https:\\/\\/)www\\.)\\w+)\\.\\w{3})|((?<=.\\w{3})\\/\\S+(\\b))|(www\\.\\S+\\.\\w{3})";
+    private static string regexRatings = "((\\d+.\\d+|\\d+)\\/\\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\\s)(\\w+)|((Verdict|VERDICT)\\:\\s\\w+)|(\\d+|\\d+\\,\\d+|\\d+.\\d+|\\d+-)((\\s\\w+\\s|\\s)(out of|Out Of)\\s)(\\d+,\\d+|\\d+|\\d+\\.\\d+)|(\\s|\\n|\\r)[A-Z](\\-|\\+)|(★+½)";
 
     private static JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
+
+    [GeneratedRegex(@"((\d+.\d+|\d+)\/\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\s)(\w+)|((Verdict|VERDICT)\:\s\w+)|(\d+|\d+\,\d+|\d+.\d+|\d+-)((\s\w+\s|\s)(out of|Out Of)\s)(\d+,\d+|\d+|\d+\.\d+)|(\s|\n|\r)[A-Z](\-|\+)|(★+½)", RegexOptions.Compiled)]
+    private static partial Regex _reviewRegex();
 
     public static async Task Main(string[] args)
     {
         TMDBService tmdbService = new TMDBService();
         //await GetNewMoviesFromListOfIDs(RawIds);
         //await UpdateBoxOfficRevenue();
-        ShuffleMovieDatabase();
+        //ShuffleMovieDatabase();
+        //GetListOfStreamProviders();
         //await UpdateReviewsForMovies();
         //PurgeUnwantedMovies();
+        //CleanUpWatchProviders();
+        //ReviewRatingsRegex();
+        ConvertMoneyStrings();
+        //ReviewWebsiteRegex();
     }
 
+    //--------------------------------------------------------------------
+    private static void CleanUpWatchProviders()
+    {
+        RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
+        foreach (RawMovie movie in db.MovieDatabase)
+        {
+            movie.WatchProviders = movie.WatchProviders?
+                .Where(p => !p.ProviderName.Contains("Amazon Channel") &&
+                            !p.ProviderName.Contains("Apple TV Channel") &&
+                            !p.ProviderName.Contains("with Ads") &&
+                            !p.ProviderName.Contains("Roku Premium Channel") &&
+                            !p.ProviderName.Contains("Plus Essential")).ToList();
+        }
+        File.WriteAllText(@"C:\Users\iarte\Desktop\watchProviders.json", JsonSerializer.Serialize(db, serializerOptions));
+    }
+
+    private static void ReviewRatingsRegex()
+    {
+        RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
+        foreach (RawMovie movie in db.MovieDatabase)
+        {
+            if (movie.Reviews != null && movie.Reviews.Count > 0)
+            {
+                for (int i = 0; i < movie.Reviews.Count; i++)
+                {
+                    string? original = movie.Reviews[i];
+                    string alteredReview = _reviewRegex().Replace(original, (Match m) => new string('*', m.Length));
+                    movie.Reviews[i] = alteredReview;
+                }
+            }
+        }
+        File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
+    }
+
+    private static void ConvertMoneyStrings()
+    {
+        RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
+        foreach (RawMovie movie in db.MovieDatabase)
+        {
+            if (movie.BoxOffice != "N/A")
+            {
+                string tempBoxOffice = movie.BoxOffice;
+                int intBoxOffice = int.Parse(tempBoxOffice, NumberStyles.Currency);
+                string convertedBoxOffice = intBoxOffice.ToString("C0");
+                movie.BoxOffice = convertedBoxOffice;
+            }
+        }
+        File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
+    }
+
+    private static void ReviewWebsiteRegex()
+    {
+        RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
+        foreach (RawMovie movie in db.MovieDatabase)
+        {
+            if (movie.Reviews != null && movie.Reviews.Count > 0)
+            {
+                List<string> newReviews = new List<string>();
+                for (int i = 0; i < movie.Reviews.Count; i++)
+                {
+                    string? original = movie.Reviews[i];
+                    bool matchingReview = _reviewRegex().IsMatch(original);
+                    if (!matchingReview)
+                    {
+                        newReviews.Add(original);
+                    }
+                }
+                movie.Reviews = newReviews;
+            }
+        }
+        File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
+    }
 
     private static async Task GetNewMoviesFromListOfIDs(string ids)
     {
@@ -46,6 +130,33 @@ internal class Program
         }
     }
 
+    private static void GetListOfStreamProviders()
+    {
+        RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
+        List<RawMovie> movies = db.MovieDatabase;
+        List<string> streamProviders = new List<string>();
+
+        foreach (RawMovie movie in movies)
+        {
+            if (movie.WatchProviders != null)
+            {
+                if (movie.WatchProviders.Count > 0)
+                {
+                    for (int i = 0; i < movie.WatchProviders.Count; i++)
+                    {
+                        string watchProvider = movie.WatchProviders[i].ProviderName;
+                        if (!streamProviders.Contains(watchProvider))
+                        {
+                            streamProviders.Add(watchProvider);
+                            Console.WriteLine(watchProvider);
+                        }
+                    }
+                }
+            }
+        }
+
+        Console.WriteLine(streamProviders);
+    }
 
     private static void ShuffleMovieDatabase()
     {
@@ -55,7 +166,6 @@ internal class Program
         var shuffledMovies = movies.OrderBy(_  => rng.Next()).ToList();
 
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(shuffledMovies, serializerOptions));
-
     }
 
     private static async Task GetNewMovieFromImdbID(string imdbID)
@@ -89,8 +199,6 @@ internal class Program
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
 
-
-
     private static void PurgeUnwantedMovies()
     {
         RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
@@ -120,7 +228,6 @@ internal class Program
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
 
-    
     private static void PurgeOldMovies()
     {
         RawMovieList db = JsonSerializer.Deserialize<RawMovieList>(File.ReadAllText(Constants.DBPath))!;
@@ -140,8 +247,6 @@ internal class Program
 
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
-
-
 
     private static async Task UpdateWatchProviders()
     {
@@ -206,7 +311,6 @@ internal class Program
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
 
-
     private static async Task UpdateBoxOfficRevenue()
     {
         TMDBService tmdbService = new TMDBService();
@@ -247,7 +351,6 @@ internal class Program
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
 
-
     private static async Task UpdateTMDBIds()
     {
         TMDBService tmdbService = new TMDBService();
@@ -274,4 +377,6 @@ internal class Program
 
         File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
+
+
 }

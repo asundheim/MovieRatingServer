@@ -39,8 +39,8 @@ internal partial class Program
         //GetListOfStreamProviders();
         //await UpdateReviewsForMovies();
         //PurgeUnwantedMovies();
-        //CleanUpWatchProviders();
-        ReviewRatingsRegex();
+        CleanUpWatchProviders();
+        //ReviewRatingsRegex();
         //ConvertMoneyStrings();
         //ReviewWebsiteRegex();
     }
@@ -58,7 +58,7 @@ internal partial class Program
                             !p.ProviderName.Contains("Roku Premium Channel") &&
                             !p.ProviderName.Contains("Plus Essential")).ToList();
         }
-        File.WriteAllText(@"C:\Users\iarte\Desktop\watchProviders.json", JsonSerializer.Serialize(db, serializerOptions));
+        File.WriteAllText(Constants.DBPath, JsonSerializer.Serialize(db, serializerOptions));
     }
 
     private static void ReviewRatingsRegex()

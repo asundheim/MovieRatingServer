@@ -3,7 +3,7 @@
 public class TimeService : ITimeService
 {
     private readonly DateTime _startDate = new DateTime(2026, 02, 02, 08, 00, 00, DateTimeKind.Utc); // DateTime.Now;
-    private readonly double _incrementMinutes = 3;
+    private readonly double _incrementMinutes = 1;
     private readonly double _incrementDays = 1;
 
     public int GetDailyIndex()

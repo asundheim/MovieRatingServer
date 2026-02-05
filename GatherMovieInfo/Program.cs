@@ -23,11 +23,11 @@ internal partial class Program
     private const int minVoteCount = 3000;
     private static Random rng = new Random();
     private static string regexWebsites = "(FULL SPOILER-FREE REVIEW)|((((https:\\/\\/)www\\.)\\w+)\\.\\w{3})|((?<=.\\w{3})\\/\\S+(\\b))|(www\\.\\S+\\.\\w{3})";
-    private static string regexRatings = "((\\d+.\\d+|\\d+)\\/\\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\\s)(\\w+)|((Verdict|VERDICT)\\:\\s\\w+)|(\\d+|\\d+\\,\\d+|\\d+.\\d+|\\d+-)((\\s\\w+\\s|\\s)(out of|Out Of)\\s)(\\d+,\\d+|\\d+|\\d+\\.\\d+)|(\\s|\\n|\\r)[A-Z](\\-|\\+)|(★+½)";
+    private static string regexRatings = "((\\d+.\\d+|\\d+)\\/\\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\\s)(\\w+)|((Verdict|VERDICT)\\:\\s\\w+)|(\\d+|\\d+\\,\\d+|\\d+.\\d+|\\d+-)((\\s\\w+\\s|\\s)(out of|Out Of)\\s)(\\d+,\\d+|\\d+|\\d+\\.\\d+)|(\\s|\\n|\\r)[A-Z](\\-|\\+)|(★+|★+½)|(\\u2605)";
 
     private static JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { WriteIndented = true };
 
-    [GeneratedRegex(@"((\d+.\d+|\d+)\/\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\s)(\w+)|((Verdict|VERDICT)\:\s\w+)|(\d+|\d+\,\d+|\d+.\d+|\d+-)((\s\w+\s|\s)(out of|Out Of)\s)(\d+,\d+|\d+|\d+\.\d+)|(\s|\n|\r)[A-Z](\-|\+)|(★+½)", RegexOptions.Compiled)]
+    [GeneratedRegex(@"((\d+.\d+|\d+)\/\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\s)(\w+)|((Verdict|VERDICT)\:\s\w+)|(\d+|\d+\,\d+|\d+.\d+|\d+-)((\s\w+\s|\s)(out of|Out Of)\s)(\d+,\d+|\d+|\d+\.\d+)|(\s|\n|\r)[A-Z](\-|\+)|(★+|★+½)|(\\u2605)", RegexOptions.Compiled)]
     private static partial Regex _reviewRegex();
 
     public static async Task Main(string[] args)
@@ -40,8 +40,8 @@ internal partial class Program
         //await UpdateReviewsForMovies();
         //PurgeUnwantedMovies();
         //CleanUpWatchProviders();
-        //ReviewRatingsRegex();
-        ConvertMoneyStrings();
+        ReviewRatingsRegex();
+        //ConvertMoneyStrings();
         //ReviewWebsiteRegex();
     }
 

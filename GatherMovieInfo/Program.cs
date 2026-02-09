@@ -13,7 +13,7 @@ namespace GatherMovieInfo;
 internal partial class Program
 {
 
-    const string RawIds = "";
+    const string RawIds = "tt35291758";
     
     private const string movieFightClubID = "550";
     private const int startingPageNumber = 1;
@@ -33,13 +33,13 @@ internal partial class Program
     public static async Task Main(string[] args)
     {
         TMDBService tmdbService = new TMDBService();
-        //await GetNewMoviesFromListOfIDs(RawIds);
+        await GetNewMoviesFromListOfIDs(RawIds);
         //await UpdateBoxOfficRevenue();
         //ShuffleMovieDatabase();
         //GetListOfStreamProviders();
         //await UpdateReviewsForMovies();
         //PurgeUnwantedMovies();
-        CleanUpWatchProviders();
+        //CleanUpWatchProviders();
         //ReviewRatingsRegex();
         //ConvertMoneyStrings();
         //ReviewWebsiteRegex();
@@ -185,6 +185,18 @@ internal partial class Program
             combinedData.TMDBId = tmdbData.TMDBID;
             combinedData.WatchProviders = tmdbProviders;
             combinedData.Reviews = tmdbReviews;
+
+            if (combinedData.BoxOffice == "N/A" && combinedData.TMDBId != 0)
+            {
+                int updateBoxOffice = (await tmdbService.GetRevenueInfoFromDB(combinedData.TMDBId));
+                if (updateBoxOffice > 0)
+                {
+                    string stringRevenue = Convert.ToString(updateBoxOffice);
+                    int intBoxOffice = int.Parse(stringRevenue, NumberStyles.Currency);
+                    string convertedBoxOffice = intBoxOffice.ToString("C0");
+                    combinedData.BoxOffice = convertedBoxOffice;
+                }
+            }
 
             db.MovieDatabase.Add(combinedData);
 

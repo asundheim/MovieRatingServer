@@ -29,7 +29,7 @@ internal partial class Program
 
     [GeneratedRegex(@"((\d+.\d+|\d+)\/\d+)|((GRADE|RATING|Grade|Rating|Score|SCORE)[:]\s)(\w+)|((Verdict|VERDICT)\:\s\w+)|(\d+|\d+\,\d+|\d+.\d+|\d+-)((\s\w+\s|\s)(out of|Out Of)\s)(\d+,\d+|\d+|\d+\.\d+)|(\s|\n|\r)[A-Z](\-|\+)|(★+|★+½)|(\\u2605)", RegexOptions.Compiled)]
     private static partial Regex _reviewRegex();
-
+     
     public static async Task Main(string[] args)
     {
         TMDBService tmdbService = new TMDBService();
